@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Movie Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand"><div class="logo">M</div><b>Movie Stack</b></div>
+    <nav>
+      <button class="nav active" data-page="home">⌂ <span>Home</span></button>
+      <button class="nav" data-page="watchlist">＋ <span>Watchlist</span><em id="watchlistCount">0</em></button>
+      <button class="nav" data-page="favorites">♥ <span>Favorites</span><em id="favCount">0</em></button>
+      <button class="nav" data-page="history">◷ <span>History</span></button>
+    </nav>
+    <div class="side-title">LIBRARY</div>
+    <button class="nav" data-page="horror">☠ <span>Horror</span></button>
+    <button class="nav" data-page="action">⚡ <span>Action</span></button>
+    <button class="nav" data-page="comedy">☻ <span>Comedy</span></button>
+    <button class="nav" data-page="sci-fi">✦ <span>Sci-Fi</span></button>
+    <div class="side-bottom">
+      <button class="nav" id="settingsBtn">⚙ <span>Settings</span></button>
+      <div class="user-mini"><div class="avatar">G</div><div><b>Guest</b><small>Movie collector</small></div></div>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <button class="mobile-menu" id="menuBtn">☰</button>
+      <div class="top-search"><span>⌕</span><input id="search" placeholder="Search movies, genres, years..." autocomplete="off"></div>
+      <div class="top-actions">
+        <button class="icon-btn" id="themeBtn" title="Theme">☾</button>
+        <button class="profile" id="profileBtn"><div class="avatar">G</div><span>Guest</span>⌄</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">YOUR PERSONAL MOVIE LIBRARY</div>
+        <h1>Track what you watch.<br><span>Never lose a movie again.</span></h1>
+        <p>Keep your watched, watching and watchlist movies organized in one place.</p>
+        <div class="hero-actions">
+          <button class="primary" id="addMovie">＋ Add movie</button>
+          <button class="secondary" id="randomMovie">⌁ Surprise me</button>
+        </div>
+      </div>
+      <div class="hero-art"><div class="rings"></div><div class="ticket">★<br><small>MOVIE NIGHT</small></div></div>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><span>Watched</span><b id="statWatched">0</b><small>movies</small></div>
+      <div class="stat"><span>Watching</span><b id="statWatching">0</b><small>right now</small></div>
+      <div class="stat"><span>Watchlist</span><b id="statWatchlist">0</b><small>to watch</small></div>
+      <div class="stat"><span>Favorites</span><b id="statFavorites">0</b><small>saved</small></div>
+    </section>
+
+    <section class="toolbar">
+      <div class="tabs">
+        <button class="tab active" data-filter="watching">Currently Watching <i id="cWatching">0</i></button>
+        <button class="tab" data-filter="watched">Watched <i id="cWatched">0</i></button>
+        <button class="tab" data-filter="unwatched">Not Watched <i id="cUnwatched">0</i></button>
+        <button class="tab" data-filter="all">All Movies <i id="cAll">0</i></button>
+      </div>
+      <div class="view-tools">
+        <select id="sort"><option value="added">Recently added</option><option value="year">Year</option><option value="rating">Rating</option><option value="title">Title</option></select>
+        <button class="view active" id="gridView">▦</button><button class="view" id="listView">☷</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><div class="eyebrow">PICK UP WHERE YOU LEFT OFF</div><h2 id="sectionTitle">Continue watching</h2></div><button class="link-btn" id="seeAll">See all →</button></div>
+      <div id="grid" class="movie-grid"></div>
+      <div id="empty" class="empty hidden"><div>🎬</div><h3>No movies here</h3><p>Try another filter or add a movie to your library.</p><button class="primary" id="emptyAdd">Add movie</button></div>
+    </section>
+
+    <section class="section lower">
+      <div class="section-head"><div><div class="eyebrow">DISCOVER YOUR LIBRARY</div><h2>Browse by genre</h2></div></div>
+      <div class="genre-grid">
+        <button class="genre-card horror" data-genre="horror"><b>Horror</b><span>Dark nights</span></button>
+        <button class="genre-card action" data-genre="action"><b>Action</b><span>Adrenaline</span></button>
+        <button class="genre-card comedy" data-genre="comedy"><b>Comedy</b><span>Good vibes</span></button>
+        <button class="genre-card scifi" data-genre="sci-fi"><b>Sci-Fi</b><span>Beyond reality</span></button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="movieModal">
+<form class="modal" id="movieForm">
+<button type="button" class="modal-close" id="closeModal">×</button>
+<div class="eyebrow">ADD TO YOUR LIBRARY</div><h2>Add a movie</h2>
+<label>Title<input id="mTitle" required placeholder="e.g. The Conjuring"></label>
+<div class="two"><label>Year<input id="mYear" type="number" placeholder="2024"></label><label>Rating<input id="mRating" type="number" step=".1" min="0" max="10" placeholder="8.0"></label></div>
+<label>Genre<select id="mGenre"><option>Horror</option><option>Action</option><option>Comedy</option><option>Sci-Fi</option><option>Drama</option><option>Thriller</option><option>Adventure</option></select></label>
+<label>Status<select id="mStatus"><option value="watching">Currently Watching</option><option value="watched">Watched</option><option value="unwatched">Not Watched</option></select></label>
+<label>Poster URL <span class="muted">(optional)</span><input id="mPoster" placeholder="https://..."></label>
+<button class="primary full">Add movie</button>
+</form>
+</dialog>
+
+<dialog id="detailModal"><div class="detail" id="detailContent"></div></dialog>
+<div id="toast"></div>
+<script src="app.js"></script>
+</body></html>
