@@ -64,3 +64,135 @@ $("#menuBtn").onclick=()=>$("#sidebar").classList.toggle("open");
 $("#settingsBtn").onclick=()=>toast("Settings panel coming next");
 $("#profileBtn").onclick=()=>toast("Guest profile");
 render();
+// ---------------- Supabase Auth ----------------
+let authMode = "login";
+let currentUser = null;
+
+function authConfigured(){ return !!window.movieSupabase; }
+function authMessage(){
+  return "Supabase is not configured. Open supabase-config.js and add your Project URL + Publishable key.";
+}
+function setUserUI(user){
+  currentUser = user || null;
+  const meta = user?.user_metadata || {};
+  const name = meta.display_name || user?.email?.split("@")[0] || "Guest";
+  const initial = name.charAt(0).toUpperCase();
+  $("#profileName").textContent = name;
+  $("#profileAvatar").textContent = initial;
+  $("#sideUserName").textContent = name;
+  $("#sideAvatar").textContent = initial;
+  $("#sideUserEmail").textContent = user?.email || "Movie collector";
+  $("#authNote").textContent = authConfigured()
+    ? (user ? `Signed in as ${user.email}` : "Your account is ready. Your movie library can be connected to the database next.")
+    : authMessage();
+}
+function openAuth(mode="login"){
+  authMode = mode;
+  $("#authTitle").textContent = mode === "login" ? "Sign in" : "Create account";
+  $("#authSubtitle").textContent = mode === "login"
+    ? "Sign in to keep your movie library available on all your devices."
+    : "Create an account to have your own Movie Stack profile.";
+  $("#nameField").classList.toggle("hidden", mode !== "signup");
+  $("#authName").required = mode === "signup";
+  $("#authPassword").autocomplete = mode === "login" ? "current-password" : "new-password";
+  $("#authSubmit").textContent = mode === "login" ? "Sign in" : "Create account";
+  $("#authSwitch").textContent = mode === "login" ? "Create an account" : "I already have an account";
+  $("#forgotPassword").classList.toggle("hidden", mode !== "login");
+  $("#authForm").reset();
+  $("#authModal").showModal();
+  setUserUI(currentUser);
+}
+
+$("#profileBtn").onclick = () => {
+  if (!currentUser) openAuth("login");
+  else openAuth("account");
+};
+$("#accountBtn").onclick = () => currentUser ? openAuth("account") : openAuth("login");
+$("#closeAuth").onclick = () => $("#authModal").close();
+$("#authSwitch").onclick = () => openAuth(authMode === "login" ? "signup" : "login");
+
+$("#authForm").onsubmit = async (e) => {
+  e.preventDefault();
+  if (!authConfigured()) { toast(authMessage()); return; }
+  const email = $("#authEmail").value.trim();
+  const password = $("#authPassword").value;
+  const button = $("#authSubmit");
+  button.disabled = true;
+  try {
+    if (authMode === "signup") {
+      const displayName = $("#authName").value.trim();
+      const { data, error } = await window.movieSupabase.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: displayName } }
+      });
+      if (error) throw error;
+      if (data.session) {
+        setUserUI(data.user);
+        $("#authModal").close();
+        toast("Account created");
+      } else {
+        toast("Account created — check your email to confirm it");
+        $("#authModal").close();
+      }
+    } else {
+      const { data, error } = await window.movieSupabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      setUserUI(data.user);
+      $("#authModal").close();
+      toast("Welcome back");
+    }
+  } catch (err) {
+    toast(err?.message || "Authentication failed");
+  } finally { button.disabled = false; }
+};
+
+$("#forgotPassword").onclick = async () => {
+  if (!authConfigured()) { toast(authMessage()); return; }
+  const email = $("#authEmail").value.trim();
+  if (!email) { toast("Enter your email first"); return; }
+  const redirect = window.location.origin + window.location.pathname;
+  const { error } = await window.movieSupabase.auth.resetPasswordForEmail(email, { redirectTo: redirect });
+  toast(error ? error.message : "Password reset email sent");
+};
+
+// In account mode, replace the auth form with a small account panel.
+const originalOpenAuth = openAuth;
+openAuth = function(mode="login") {
+  if (mode === "account" && currentUser) {
+    $("#authTitle").textContent = "Your account";
+    $("#authSubtitle").textContent = currentUser.email;
+    $("#nameField").classList.add("hidden");
+    $("#authEmail").parentElement.classList.add("hidden");
+    $("#authPassword").parentElement.classList.add("hidden");
+    $("#authSubmit").textContent = "Sign out";
+    $("#authSubmit").onclick = async (e) => {
+      e.preventDefault();
+      const { error } = await window.movieSupabase.auth.signOut();
+      if (error) { toast(error.message); return; }
+      currentUser = null;
+      setUserUI(null);
+      $("#authModal").close();
+      toast("Signed out");
+    };
+    $("#authSwitch").classList.add("hidden");
+    $("#forgotPassword").classList.add("hidden");
+    $("#authNote").textContent = "Your account is connected. Your movie library can be synced to Supabase database tables next.";
+    $("#authForm").reset();
+    $("#authModal").showModal();
+    return;
+  }
+  // restore normal form controls after account view
+  $("#authEmail").parentElement.classList.remove("hidden");
+  $("#authPassword").parentElement.classList.remove("hidden");
+  $("#authSubmit").onclick = null;
+  $("#authSwitch").classList.remove("hidden");
+  originalOpenAuth(mode);
+};
+
+(async function initAuth(){
+  if (!authConfigured()) { setUserUI(null); return; }
+  const { data } = await window.movieSupabase.auth.getSession();
+  setUserUI(data?.session?.user || null);
+  window.movieSupabase.auth.onAuthStateChange((_event, session) => setUserUI(session?.user || null));
+})();

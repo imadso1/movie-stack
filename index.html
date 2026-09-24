@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 <div class="app">
@@ -26,7 +28,8 @@
     <button class="nav" data-page="sci-fi">✦ <span>Sci-Fi</span></button>
     <div class="side-bottom">
       <button class="nav" id="settingsBtn">⚙ <span>Settings</span></button>
-      <div class="user-mini"><div class="avatar">G</div><div><b>Guest</b><small>Movie collector</small></div></div>
+      <button class="nav account-nav" id="accountBtn">◉ <span>Account</span></button>
+      <div class="user-mini"><div class="avatar" id="sideAvatar">G</div><div><b id="sideUserName">Guest</b><small id="sideUserEmail">Movie collector</small></div></div>
     </div>
   </aside>
 
@@ -36,7 +39,7 @@
       <div class="top-search"><span>⌕</span><input id="search" placeholder="Search movies, genres, years..." autocomplete="off"></div>
       <div class="top-actions">
         <button class="icon-btn" id="themeBtn" title="Theme">☾</button>
-        <button class="profile" id="profileBtn"><div class="avatar">G</div><span>Guest</span>⌄</button>
+        <button class="profile" id="profileBtn"><div class="avatar" id="profileAvatar">G</div><span id="profileName">Guest</span>⌄</button>
       </div>
     </header>
 
@@ -105,6 +108,23 @@
 </dialog>
 
 <dialog id="detailModal"><div class="detail" id="detailContent"></div></dialog>
+
+<dialog id="authModal">
+  <form class="modal auth-modal" id="authForm">
+    <button type="button" class="modal-close" id="closeAuth">×</button>
+    <div class="eyebrow">MOVIE STACK ACCOUNT</div>
+    <h2 id="authTitle">Sign in</h2>
+    <p class="auth-subtitle" id="authSubtitle">Sign in to keep your movie library available on all your devices.</p>
+    <label id="nameField" class="hidden">Display name<input id="authName" placeholder="Your name"></label>
+    <label>Email<input id="authEmail" type="email" required placeholder="you@example.com" autocomplete="email"></label>
+    <label>Password<input id="authPassword" type="password" required minlength="6" placeholder="At least 6 characters" autocomplete="current-password"></label>
+    <button class="primary full" id="authSubmit" type="submit">Sign in</button>
+    <button class="auth-switch" type="button" id="authSwitch">Create an account</button>
+    <button class="auth-forgot" type="button" id="forgotPassword">Forgot password?</button>
+    <div class="auth-note" id="authNote">Supabase is not configured yet. Add your Project URL and Publishable key in <b>supabase-config.js</b>.</div>
+  </form>
+</dialog>
+
 <div id="toast"></div>
 <script src="app.js"></script>
 </body></html>
